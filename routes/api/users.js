@@ -47,3 +47,51 @@ router.post('/register', (req, res) => {
     });
   });
 });
+
+// route: POST api/users/login
+// desc: Login user and return JWT token
+// access Public
+
+router.post('/login', (req, res) => {
+  const { errors, isValid } = validateLoginInput(req.body);
+
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
+  const email = req.body.email;
+  const password = req.body.password;
+
+  // find user by email
+  user.findOne({ email }).then(user => {
+    // check if user exists
+    if (!user) {
+      return res.status(404).json({ emailnotfound: 'Email not found' });
+    }
+    // check password
+    bcrypt.compare(password, user.password).then(isMatch => {
+      if (isMatch) {
+        const payload = {
+          id: user.id,
+          firstName: user.firstName,
+          surname: user.surname
+        };
+
+        jwt.sign(
+          payload,
+          keys.secretOrKey,
+          { expiresIn: 31556926 },
+          (err, token) => {
+            res.json({ success: true, token: 'Bearer ' + token });
+          }
+        );
+      } else {
+        return res
+          .status(400)
+          .json({ passwordincorrect: 'Password incorrect' });
+      }
+    });
+  });
+});
+
+module.exports = router;
