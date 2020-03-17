@@ -32,19 +32,18 @@ router.post('/register', (req, res) => {
         email: req.body.email,
         password: req.body.password
       });
-    }
-
-    // hash password before saving new user
-    bcrypt.genSalt(10, (err, salt) => {
-      bcrypt.hash(newUser.password, salt, (err, hash) => {
-        if (err) throw err;
-        newUser.password = hash;
-        newUser
-          .save()
-          .then(user => res.json(user))
-          .catch(console.log(err));
+      // hash password before saving new user
+      bcrypt.genSalt(10, (err, salt) => {
+        bcrypt.hash(newUser.password, salt, (err, hash) => {
+          if (err) throw err;
+          newUser.password = hash;
+          newUser
+            .save()
+            .then(user => res.json(user))
+            .catch(console.log(err));
+        });
       });
-    });
+    }
   });
 });
 
@@ -63,7 +62,7 @@ router.post('/login', (req, res) => {
   const password = req.body.password;
 
   // find user by email
-  user.findOne({ email }).then(user => {
+  User.findOne({ email }).then(user => {
     // check if user exists
     if (!user) {
       return res.status(404).json({ emailnotfound: 'Email not found' });
